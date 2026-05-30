@@ -1,7 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.cherome.options import Options
+from selenium.webdriver.chrome.options import Options
 
 # Konstante
 
@@ -97,3 +97,38 @@ class TestLinkovi:
             'Link ka frizerskom salonu (krasiva.ceragemkrusevac.com) nije pronadjen'
         )    
 
+class TestSadrzaj:
+    """Proverava da li se kljucni sadrzaj prikazuje na stranicama"""
+    def test_naslovna_ima_h1(self, driver):
+        """Naslovna strana treba da ima H1 naslov"""
+        driver.get(BASE_URL)
+        h1_elementi = driver.find_elements(By.TAG_NAME, 'h1') # trazi sve <h1> elemente, najvazniji naslov na stranici, cuva se u listi
+        assert len(h1_elementi) >= 1, 'Na naslovnoj strani nema H1 elementa' # provera da li lista sadrzi bar jedan <h1> element
+        assert h1_elementi[0].is_displayed(), 'H1 naslov nije vidljiv' # proverava da li je prvi <h1> vidljiv (jer moze biti postojati, ali sakriven  u css)
+
+    def test_naslovna_ima_slike(self, driver):
+        """Naslovna strana treba da sadrzi barem jednu sliku"""
+        driver.get(BASE_URL)
+        slike = driver.find_elements(By.TAG_NAME, 'img') # pronalazi sve <img> tagove
+        vidljive = [s for s in slike if s.is_displayed()] # filtrira samo vidljive slike
+        assert len(vidljive) >=1, 'Na naslovnoj stranici nema vidljivih slika.' # greska ukloliko nema prikazanih slika
+
+    def test_usluge_prikazane_na_naslovnoj(self, driver):
+        """Na naslovnoj strani treba da budu prikazane usluge salona"""
+        driver.get(BASE_URL)
+        page_text = driver.find_element(By.TAG_NAME, 'body').text # pronalazi <body> tag, Selenium .text vraca sav sadrzaj kao string
+        usluge = ['Ceragem', 'Presoterapija', 'Kavitacija']
+        for usluga in usluge:
+            assert usluga in page_text, f'Usluga {usluga} nije pronadjena na naslovnoj stranici.'
+
+    def test_galerija_slike(self, driver):
+        """Galerija treba da sadrzi slike"""
+        driver.get(f'{BASE_URL}/galerija/')
+        slike = driver.find_elements(By.TAG_NAME, 'img') # pronalazi <img> elemente
+        prave_slike = [
+            s for s in slike
+            if s.get_attribute('src') and # proverava da li sadrzi putanju do slike
+            'placeholder' not in (s.get_atttibute('src') or '').lower() and # proverava da li ne sadrzi samo placeholder
+            s.is_displayed() # proverava da li je <img> vidljiv element
+        ]
+        assert len(prave_slike) >= 1, 'Galerija ne sadrzi vidljive slike'
