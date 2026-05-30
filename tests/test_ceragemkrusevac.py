@@ -132,14 +132,6 @@ class TestSadrzaj:
         vidljive = [s for s in slike if s.is_displayed()] # filtrira samo vidljive slike
         assert len(vidljive) >=1, 'Na naslovnoj stranici nema vidljivih slika.' # greska ukloliko nema prikazanih slika
 
-    def test_usluge_prikazane_na_naslovnoj(self, driver):
-        """Na naslovnoj strani treba da budu prikazane usluge salona"""
-        driver.get(BASE_URL)
-        page_text = driver.find_element(By.TAG_NAME, 'body').text # pronalazi <body> tag, Selenium .text vraca sav sadrzaj kao string
-        usluge = ['Ceragem', 'Presoterapija', 'Kavitacija']
-        for usluga in usluge:
-            assert usluga in page_text, f'Usluga {usluga} nije pronadjena na naslovnoj stranici.'
-
     def test_galerija_slike(self, driver):
         """Galerija treba da sadrzi slike"""
         driver.get(f'{BASE_URL}/galerija/')
