@@ -15,7 +15,7 @@ NAV_LINKS = {
     "Kontakt":  f"{BASE_URL}/kontakt/",
 }
 
-# URL adrese usluga koje se nude - koristiti u buducim testovima
+# URL adrese usluga koje se nude
 SERVICE_LINKS = [
     f"{BASE_URL}/ceragem-masaza/",
     f"{BASE_URL}/presoterapija",
@@ -65,3 +65,35 @@ class TestNavigacija:
         tel_link = driver.find_element(By.CSS_SELECTOR, "a[href^='tel:']") # trazi prvi element koji odgovara selektoru, a ciji href pocinje ^=
         assert tel_link is not None, 'Telefon link nije pronadjen'
         assert tel_link.is_displayed(), 'Pozovi Nas dugme nije vidljivo' # proverava da li je element vidljiv korisniku
+
+class TestLinkovi:
+    """Proverava da li kriticni linkovi na sajtu rade ispravno"""
+    def test_linkovi_usluga_postoje(self, driver):
+        """Svi linkovi ka uslugama na naslovnoj strani treba da budu pristuni"""
+        driver.get(BASE_URL)
+        page_links = [a.get_attribube('href') for a in driver.find_elements(By.TAG_NAME, 'a')] # pronalazi sve <a> elemente, a zatim uzima href od pronadjenih <a> elemenata
+        for url in SERVICE_LINKS: # prolazi kroz svaki URL iz liste SERVICE_LINKS
+            assert url in page_links, f'Link ka usluzi {url} nije pronadjen na naslovnoj strani.' # za svaki URL proverava da li je u SERVICE_LINKS ili vraca gresku
+
+    @pytest.mark.parametrize('url', SERVICE_LINKS) # pokrece se 5 puta, jednom za svaki URL iz SERVICE_LINKS
+    def test_stranice_usluga_se_otvaraju(self, driver, url):
+        """Svaka stranica usluge treba da se ucita bez greske"""
+        driver.get(url)
+        assert '404' not in driver.title.lower(), f'Stranica {url} vraca 404' # proverava da naslov stranice ne sadrzi 404
+
+    def test_facebook_link_postoji(self, driver):
+        """Link ka Facebook stranici treba da postoji na sajtu"""
+        driver.get(BASE_URL)
+        links = [a.get_attribute('href') for a in driver.find_elements(By.TAG_NAME, 'a')] # nalazi <a> elemente
+        assert any('facebook.com' in (h or '') for h in links), ( # proverava da li sadrzi bar jedan href facebook.com
+            'Facebook link nije pronadjen na sajtu.'
+        )
+    
+    def test_frizerski_salon_link(self, driver):
+        """Link ka podsajtu frizerskog salona treba da postoji"""
+        driver.get(BASE_URL)
+        page_links = [a.get_attribute('href') for a in driver.find_elements(By.TAG_NAME, 'a')] # lista svih <a> elemenata i linkova
+        assert any('krasiva.ceragemkrusevac.com' in (h or '') for h in page_links), ( # proverava da li sadrzi sporni link
+            'Link ka frizerskom salonu (krasiva.ceragemkrusevac.com) nije pronadjen'
+        )    
+
