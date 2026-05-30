@@ -198,3 +198,10 @@ class TestMobilniPrikaz:
         assert page_sirina <= viewport_sirina + 5, ( # tolerancija do 5px, bez tolerancije test bi mogao da pada
             f"Horizontalni scroll na mobilnom: page width={page_sirina}px > viewport={viewport_sirina}px"
         )
+
+    def test_telefon_link_na_mobilnom(self, mobile_driver):
+        """Telefon link treba da bude vidljiv na mobilnom prikazu"""
+        mobile_driver.get(BASE_URL)
+        tel_links = mobile_driver.find_elements(By.CSS_SELECTOR, "a[href^='tel:']") # proverava <a> ciji href pocinje sa tel:
+        assert len(tel_links) >= 1, 'Telefon link nije pronađen na mobilnom prikazu' # proverava da li postoji tel href
+        assert any(t.is_displayed() for t in tel_links), 'Telefon link nije vidljiv na mobilnom prikazu' # proverava da li je vidljiv
